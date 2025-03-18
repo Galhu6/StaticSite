@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 class TestHTMLNode(unittest.TestCase):
 
@@ -39,5 +39,72 @@ class TestLeafNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             LeafNode("p", None)
 
+
+class TestParentNode(unittest.TestCase):
+
+    def test_to_html_single_child(self):
+        # """Test a ParentNode with a single LeafNode child."""
+        child = LeafNode("p", "Hello world")
+        parent = ParentNode("div", [child])
+        self.assertEqual(parent.to_html(), "<div><p>Hello world</p></div>")
+
+    def test_to_html_multiple_children(self):
+        # """Test a ParentNode with multiple LeafNode children."""
+        child1 = LeafNode("p", "First paragraph")
+        child2 = LeafNode("p", "Second paragraph")
+        parent = ParentNode("div", [child1, child2])
+        self.assertEqual(parent.to_html(), "<div><p>First paragraph</p><p>Second paragraph</p></div>")
+
+    def test_to_html_with_attributes(self):
+        # """Test a ParentNode with attributes (props)."""
+        child = LeafNode("p", "Text with class")
+        parent = ParentNode("div", [child], props={"class": "container"})
+        self.assertEqual(parent.to_html(), '<div class="container"><p>Text with class</p></div>')
+
+    def test_to_html_nested_structure(self):
+        # """Test deeply nested ParentNodes."""
+        grandchild = LeafNode("i", "italic text")
+        child = ParentNode("p", [grandchild])
+        parent = ParentNode("section", [child])
+        self.assertEqual(parent.to_html(), "<section><p><i>italic text</i></p></section>")
+
+    def test_to_html_mixed_content(self):
+        # """Test ParentNode with both LeafNode and ParentNode children."""
+        grandchild = LeafNode("strong", "bold text")
+        child = ParentNode("span", [grandchild])
+        sibling = LeafNode("p", "A separate paragraph")
+        parent = ParentNode("div", [child, sibling])
+        self.assertEqual(parent.to_html(), "<div><span><strong>bold text</strong></span><p>A separate paragraph</p></div>")
+
+    def test_to_html_parent_with_text_and_children(self):
+        # """Ensure ParentNode does not allow a value (should only have children)."""
+        with self.assertRaises(TypeError):
+            ParentNode("div", [], value="Invalid")
+
+    def test_to_html_empty_children(self):
+        # """Ensure ParentNode raises ValueError when initialized without children."""
+        with self.assertRaises(ValueError):
+            ParentNode("ul", [])
+
+    def test_to_html_with_multiple_attributes(self):
+        # """Test ParentNode with multiple attributes."""
+        child = LeafNode("p", "Paragraph with styles")
+        parent = ParentNode("div", [child], props={"class": "content", "id": "main"})
+        self.assertEqual(parent.to_html(), '<div class="content" id="main"><p>Paragraph with styles</p></div>')
+
+    # def test_to_html_parent_with_only_text(self):
+    #     # """Ensure ParentNode with text but no children is not allowed."""
+    #     with self.assertRaises(TypeError):
+    #         ParentNode("span", "Just text")
+
+    def test_to_html_list_structure(self):
+        # """Test ParentNode for an unordered list structure."""
+        li1 = LeafNode("li", "Item 1")
+        li2 = LeafNode("li", "Item 2")
+        ul = ParentNode("ul", [li1, li2])
+        self.assertEqual(ul.to_html(), "<ul><li>Item 1</li><li>Item 2</li></ul>")
+
+
 if __name__ == "__main__":
     unittest.main()
+
